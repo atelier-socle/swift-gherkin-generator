@@ -7,7 +7,7 @@
 /// ```swift
 /// let doc = DocString(content: "{\"key\": \"value\"}", mediaType: "application/json")
 /// ```
-public struct DocString: Sendable, Hashable {
+public struct DocString: Sendable, Hashable, Codable {
     /// The content of the doc string.
     public let content: String
 

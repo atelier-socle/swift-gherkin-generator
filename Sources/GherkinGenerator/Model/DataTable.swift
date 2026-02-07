@@ -10,7 +10,7 @@
 ///     ["Bob", "bob@example.com"],
 /// ])
 /// ```
-public struct DataTable: Sendable, Hashable {
+public struct DataTable: Sendable, Hashable, Codable {
     /// The rows of the table. Each row is an array of cell values.
     /// The first row is typically the header row.
     public let rows: [[String]]

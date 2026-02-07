@@ -9,7 +9,7 @@
 ///     Step(keyword: .and, text: "at least one existing order"),
 /// ])
 /// ```
-public struct Background: Sendable, Hashable {
+public struct Background: Sendable, Hashable, Codable {
     /// An optional name for the background.
     public let name: String?
 

@@ -76,8 +76,8 @@ public struct GherkinFormatter: Sendable {
     private func formatBackground(_ background: Background, language: GherkinLanguage) -> [String] {
         var lines: [String] = []
         let keyword = language.keywords.background[0]
-        let name = background.name.map { ": \($0)" } ?? ""
-        lines.append(indent("\(keyword)\(name)", level: 1))
+        let name = background.name.map { " \($0)" } ?? ""
+        lines.append(indent("\(keyword):\(name)", level: 1))
         lines.append(contentsOf: formatSteps(background.steps, language: language, level: 2))
         return lines
     }
@@ -123,7 +123,69 @@ public struct GherkinFormatter: Sendable {
         }
         let keyword = language.keywords.rule[0]
         lines.append(indent("\(keyword): \(rule.title)", level: 1))
-        // TODO: Format rule children
+
+        if let description = rule.description {
+            lines.append(indent(description, level: 2))
+            lines.append("")
+        }
+
+        if let background = rule.background {
+            lines.append("")
+            let bgKeyword = language.keywords.background[0]
+            let name = background.name.map { " \($0)" } ?? ""
+            lines.append(indent("\(bgKeyword):\(name)", level: 2))
+            lines.append(contentsOf: formatSteps(background.steps, language: language, level: 3))
+        }
+
+        for child in rule.children {
+            lines.append("")
+            switch child {
+            case .scenario(let scenario):
+                lines.append(contentsOf: formatRuleScenario(scenario, language: language))
+            case .outline(let outline):
+                lines.append(contentsOf: formatRuleOutline(outline, language: language))
+            }
+        }
+
+        return lines
+    }
+
+    private func formatRuleScenario(
+        _ scenario: Scenario, language: GherkinLanguage
+    ) -> [String] {
+        var lines: [String] = []
+        if !scenario.tags.isEmpty {
+            lines.append(indent(scenario.tags.map(\.rawValue).joined(separator: " "), level: 2))
+        }
+        let keyword = language.keywords.scenario[0]
+        lines.append(indent("\(keyword): \(scenario.title)", level: 2))
+        lines.append(contentsOf: formatSteps(scenario.steps, language: language, level: 3))
+        return lines
+    }
+
+    private func formatRuleOutline(
+        _ outline: ScenarioOutline, language: GherkinLanguage
+    ) -> [String] {
+        var lines: [String] = []
+        if !outline.tags.isEmpty {
+            lines.append(indent(outline.tags.map(\.rawValue).joined(separator: " "), level: 2))
+        }
+        let keyword = language.keywords.scenarioOutline[0]
+        lines.append(indent("\(keyword): \(outline.title)", level: 2))
+        lines.append(contentsOf: formatSteps(outline.steps, language: language, level: 3))
+
+        for example in outline.examples {
+            lines.append("")
+            let exKeyword = language.keywords.examples[0]
+            let name = example.name.map { ": \($0)" } ?? ""
+            if !example.tags.isEmpty {
+                lines.append(
+                    indent(example.tags.map(\.rawValue).joined(separator: " "), level: 3))
+            }
+            lines.append(indent("\(exKeyword)\(name):", level: 3))
+            lines.append(contentsOf: formatDataTable(example.table, level: 4))
+        }
+
         return lines
     }
 

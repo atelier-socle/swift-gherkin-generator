@@ -14,7 +14,7 @@
 ///     ]
 /// )
 /// ```
-public struct Scenario: Sendable, Hashable {
+public struct Scenario: Sendable, Hashable, Codable {
     /// The scenario title.
     public let title: String
 
@@ -69,7 +69,7 @@ public struct Scenario: Sendable, Hashable {
 ///     ]
 /// )
 /// ```
-public struct ScenarioOutline: Sendable, Hashable {
+public struct ScenarioOutline: Sendable, Hashable, Codable {
     /// The scenario outline title.
     public let title: String
 
@@ -113,7 +113,7 @@ public struct ScenarioOutline: Sendable, Hashable {
 /// Features and rules can contain scenarios, scenario outlines, and
 /// (at feature level) rules, interleaved in any order. This enum
 /// preserves the original ordering.
-public enum FeatureChild: Sendable, Hashable {
+public enum FeatureChild: Sendable, Hashable, Codable {
     /// A standard scenario.
     case scenario(Scenario)
 

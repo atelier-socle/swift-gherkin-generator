@@ -6,7 +6,7 @@
 /// ```swift
 /// let step = Step(keyword: .given, text: "a valid account")
 /// ```
-public enum StepKeyword: String, Sendable, Hashable, CaseIterable {
+public enum StepKeyword: String, Sendable, Hashable, CaseIterable, Codable {
     /// A precondition step (`Given`).
     case given
 
@@ -36,7 +36,7 @@ public enum StepKeyword: String, Sendable, Hashable, CaseIterable {
 /// let step = Step(keyword: .given, text: "the following users")
 ///     .withTable(DataTable(rows: [["name", "role"], ["Alice", "admin"]]))
 /// ```
-public struct Step: Sendable, Hashable {
+public struct Step: Sendable, Hashable, Codable {
     /// The step keyword (`Given`, `When`, `Then`, `And`, `But`, `*`).
     public let keyword: StepKeyword
 

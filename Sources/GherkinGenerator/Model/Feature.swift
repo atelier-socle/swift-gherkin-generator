@@ -17,7 +17,7 @@
 /// print(feature.title)      // "Login"
 /// print(feature.children)   // [.scenario(...)]
 /// ```
-public struct Feature: Sendable, Hashable {
+public struct Feature: Sendable, Hashable, Codable {
     /// The feature title.
     public let title: String
 

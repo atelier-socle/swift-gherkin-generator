@@ -13,7 +13,7 @@
 ///     ])
 /// )
 /// ```
-public struct Examples: Sendable, Hashable {
+public struct Examples: Sendable, Hashable, Codable {
     /// An optional name for this examples block.
     public let name: String?
 

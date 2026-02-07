@@ -8,7 +8,7 @@
 /// let tag = Tag("smoke")
 /// print(tag.rawValue) // "@smoke"
 /// ```
-public struct Tag: Sendable, Hashable {
+public struct Tag: Sendable, Hashable, Codable {
     /// The tag name without the `@` prefix.
     public let name: String
 

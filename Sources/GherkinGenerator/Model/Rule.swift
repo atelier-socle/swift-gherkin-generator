@@ -15,7 +15,7 @@
 ///     ]
 /// )
 /// ```
-public struct Rule: Sendable, Hashable {
+public struct Rule: Sendable, Hashable, Codable {
     /// The rule title.
     public let title: String
 
@@ -56,7 +56,7 @@ public struct Rule: Sendable, Hashable {
 }
 
 /// A child element of a rule (scenario or scenario outline only — no nested rules).
-public enum RuleChild: Sendable, Hashable {
+public enum RuleChild: Sendable, Hashable, Codable {
     /// A standard scenario within this rule.
     case scenario(Scenario)
 

@@ -8,7 +8,7 @@ import Foundation
 /// ```swift
 /// let comment = Comment(text: "This scenario covers the happy path")
 /// ```
-public struct Comment: Sendable, Hashable {
+public struct Comment: Sendable, Hashable, Codable {
     /// The comment text without the `#` prefix.
     public let text: String
 

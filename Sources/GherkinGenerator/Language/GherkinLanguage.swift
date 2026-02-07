@@ -14,7 +14,7 @@
 /// - Note: The full set of 70+ languages will be loaded from the official
 ///   `gherkin-languages.json`. This enum provides the most commonly used
 ///   languages as static members with support for custom languages.
-public struct GherkinLanguage: Sendable, Hashable {
+public struct GherkinLanguage: Sendable, Hashable, Codable {
     /// The ISO language code (e.g., `"en"`, `"fr"`, `"de"`).
     public let code: String
 
