@@ -1,5 +1,9 @@
 import Foundation
 
+#if canImport(FoundationXML)
+    import FoundationXML
+#endif
+
 /// Configuration for Excel (.xlsx) import, mapping column headers to Gherkin step types.
 ///
 /// ```swift

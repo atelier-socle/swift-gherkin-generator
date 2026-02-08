@@ -310,7 +310,7 @@ public actor StreamingExporter {
     /// - Throws: ``GherkinError/exportFailed(path:reason:)`` on I/O errors.
     public func export(_ feature: Feature, to path: String) async throws {
         let fileManager = FileManager.default
-        fileManager.createFile(atPath: path, contents: nil)
+        _ = fileManager.createFile(atPath: path, contents: nil)
 
         guard let handle = FileHandle(forWritingAtPath: path) else {
             throw GherkinError.exportFailed(path: path, reason: "Cannot open file for writing")
@@ -353,7 +353,7 @@ public actor StreamingExporter {
         let formatter = self.formatter
         return AsyncStream { continuation in
             let fileManager = FileManager.default
-            fileManager.createFile(atPath: path, contents: nil)
+            _ = fileManager.createFile(atPath: path, contents: nil)
 
             guard let handle = FileHandle(forWritingAtPath: path) else {
                 continuation.finish()
