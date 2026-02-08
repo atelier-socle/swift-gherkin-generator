@@ -25,7 +25,6 @@ public struct GherkinFormatter: Sendable {
     /// - Parameter feature: The feature to format.
     /// - Returns: A properly formatted Gherkin string.
     public func format(_ feature: Feature) -> String {
-        // TODO: Implement full formatting
         var lines: [String] = []
 
         // Language header (if not English)
@@ -51,13 +50,13 @@ public struct GherkinFormatter: Sendable {
 
         // Background
         if let background = feature.background {
-            lines.append("")
+            if !configuration.compact { lines.append("") }
             lines.append(contentsOf: formatBackground(background, language: feature.language))
         }
 
         // Children
         for child in feature.children {
-            lines.append("")
+            if !configuration.compact { lines.append("") }
             switch child {
             case .scenario(let scenario):
                 lines.append(contentsOf: formatScenario(scenario, language: feature.language))
@@ -98,7 +97,7 @@ public struct GherkinFormatter: Sendable {
     func formatBackgroundSection(
         _ background: Background, language: GherkinLanguage
     ) -> [String] {
-        var lines = [""]
+        var lines: [String] = configuration.compact ? [] : [""]
         lines.append(contentsOf: formatBackground(background, language: language))
         return lines
     }
@@ -107,7 +106,7 @@ public struct GherkinFormatter: Sendable {
     func formatChild(
         _ child: FeatureChild, language: GherkinLanguage
     ) -> [String] {
-        var lines = [""]
+        var lines: [String] = configuration.compact ? [] : [""]
         switch child {
         case .scenario(let scenario):
             lines.append(contentsOf: formatScenario(scenario, language: language))
@@ -149,7 +148,7 @@ public struct GherkinFormatter: Sendable {
         lines.append(contentsOf: formatSteps(outline.steps, language: language, level: 2))
 
         for example in outline.examples {
-            lines.append("")
+            if !configuration.compact { lines.append("") }
             let exKeyword = language.keywords.examples[0]
             let name = example.name.map { ": \($0)" } ?? ""
             let suffix = example.name == nil ? ":" : ""
@@ -173,11 +172,11 @@ public struct GherkinFormatter: Sendable {
 
         if let description = rule.description {
             lines.append(indent(description, level: 2))
-            lines.append("")
+            if !configuration.compact { lines.append("") }
         }
 
         if let background = rule.background {
-            lines.append("")
+            if !configuration.compact { lines.append("") }
             let bgKeyword = language.keywords.background[0]
             let name = background.name.map { " \($0)" } ?? ""
             lines.append(indent("\(bgKeyword):\(name)", level: 2))
@@ -185,7 +184,7 @@ public struct GherkinFormatter: Sendable {
         }
 
         for child in rule.children {
-            lines.append("")
+            if !configuration.compact { lines.append("") }
             switch child {
             case .scenario(let scenario):
                 lines.append(contentsOf: formatRuleScenario(scenario, language: language))
@@ -222,7 +221,7 @@ public struct GherkinFormatter: Sendable {
         lines.append(contentsOf: formatSteps(outline.steps, language: language, level: 3))
 
         for example in outline.examples {
-            lines.append("")
+            if !configuration.compact { lines.append("") }
             let exKeyword = language.keywords.examples[0]
             let name = example.name.map { ": \($0)" } ?? ""
             let suffix = example.name == nil ? ":" : ""

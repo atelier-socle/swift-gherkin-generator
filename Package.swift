@@ -55,7 +55,10 @@ let package = Package(
         ),
         .testTarget(
             name: "GherkinGeneratorTests",
-            dependencies: ["GherkinGenerator", "CZlib"],
+            dependencies: [
+                "GherkinGenerator",
+                "CZlib"
+            ],
             path: "Tests/GherkinGeneratorTests",
             resources: [.process("Fixtures/Resources")]
         ),
