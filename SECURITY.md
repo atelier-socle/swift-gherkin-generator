@@ -14,7 +14,7 @@ If you discover a security vulnerability in GherkinGenerator, please report it r
 
 Instead, please report vulnerabilities through our contact page:
 
-[https://www.atelier-socle.com/en/contact](https://www.atelier-socle.com/en/contact)
+[Atelier Socle](https://www.atelier-socle.com/en/contact)
 
 ### What to Include
 
