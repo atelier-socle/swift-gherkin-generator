@@ -11,7 +11,7 @@ let formatter = GherkinFormatter()
 let output = formatter.format(feature)
 ```
 
-Use ``FormatterConfiguration`` presets — ``FormatterConfiguration/default``, ``FormatterConfiguration/compact``, or ``FormatterConfiguration/tabs`` — or create a custom configuration for full control over indentation style and spacing.
+Use ``FormatterConfiguration`` presets — `.default`, `.compact`, or `.tabs` — or create a custom configuration for full control over indentation style and spacing.
 
 ## Topics
 

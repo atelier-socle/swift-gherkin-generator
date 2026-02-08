@@ -540,7 +540,7 @@ extension GherkinFeature {
 
 /// A builder for constructing background steps.
 ///
-/// Used within the ``GherkinFeature/background(_:)-1h68v`` closure.
+/// Used within the ``GherkinFeature/background(_:)-((BackgroundBuilder)->BackgroundBuilder)`` closure.
 public struct BackgroundBuilder: Sendable {
     private var steps: [Step]
 

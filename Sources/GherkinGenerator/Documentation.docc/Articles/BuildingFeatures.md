@@ -23,7 +23,7 @@ let feature = try GherkinFeature(title: "Shopping Cart")
 
 ## Background
 
-Define shared preconditions that run before every scenario using ``GherkinFeature/background(_:)-1h68v``. The closure receives a ``BackgroundBuilder``:
+Define shared preconditions that run before every scenario using a closure. The closure receives a ``BackgroundBuilder``:
 
 ```swift
 let feature = try GherkinFeature(title: "Orders")
@@ -37,7 +37,7 @@ let feature = try GherkinFeature(title: "Orders")
     .build()
 ```
 
-You can also set a pre-built ``Background`` value directly with ``GherkinFeature/background(_:)-9fqaw``.
+You can also set a pre-built ``Background`` value directly.
 
 ## Scenario Outlines
 

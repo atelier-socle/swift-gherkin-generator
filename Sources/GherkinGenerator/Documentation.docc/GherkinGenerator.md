@@ -66,7 +66,7 @@ let feature = try GherkinFeature(title: "User Authentication")
 
 ### Internationalization
 
-- <doc:Internationalization>
+- <doc:InternationalizationGuide>
 
 ### Streaming & Batch Processing
 

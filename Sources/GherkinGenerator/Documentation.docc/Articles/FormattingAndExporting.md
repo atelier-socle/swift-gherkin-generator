@@ -21,18 +21,18 @@ The default configuration uses 2-space indentation and blank lines between secti
 
 | Preset | Indent | Compact |
 |--------|--------|---------|
-| ``FormatterConfiguration/default`` | 2 spaces | No |
-| ``FormatterConfiguration/compact`` | 2 spaces | Yes |
-| ``FormatterConfiguration/tabs`` | 1 tab | No |
+| `.default` | 2 spaces | No |
+| `.compact` | 2 spaces | Yes |
+| `.tabs` | 1 tab | No |
 
-Use ``FormatterConfiguration/compact`` to remove blank lines between scenarios:
+Use `.compact` to remove blank lines between scenarios:
 
 ```swift
 let formatter = GherkinFormatter(configuration: .compact)
 let compactOutput = formatter.format(feature)
 ```
 
-Use ``FormatterConfiguration/tabs`` for tab-based indentation:
+Use `.tabs` for tab-based indentation:
 
 ```swift
 let formatter = GherkinFormatter(configuration: .tabs)

@@ -1,4 +1,4 @@
-# Internationalization
+# Internationalization Guide
 
 Write and parse Gherkin features in 70+ languages from the official specification.
 

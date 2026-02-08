@@ -31,8 +31,8 @@ Call ``build()`` to finalize the builder into an immutable ``Feature`` value. Us
 
 ### Background
 
-- ``background(_:)-1h68v``
-- ``background(_:)-9fqaw``
+- ``background(_:)-((BackgroundBuilder)->BackgroundBuilder)``
+- ``background(_:)-(Background)``
 
 ### Adding Scenarios
 
