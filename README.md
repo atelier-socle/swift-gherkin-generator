@@ -20,7 +20,10 @@ Part of the [Atelier Socle](https://www.atelier-socle.com) Gherkin ecosystem alo
 - **Fluent Builder** — chainable, immutable, `Sendable`-safe construction of features, scenarios, outlines, backgrounds, rules, data tables, and doc strings
 - **Validation Engine** — 5 built-in rules (structure, coherence, tag format, table consistency, outline placeholders) plus custom rules via the `ValidationRule` protocol
 - **Multi-format Export** — `.feature`, JSON (`Codable`), and Markdown
-- **Multi-format Import** — `.feature` (recursive descent parser), CSV, JSON, and plain text
+- **Multi-format Import** — `.feature` (recursive descent parser), CSV, JSON, plain text, and Excel `.xlsx`
+- **Batch Export** — parallel export of multiple features to a directory via `BatchExporter` actor, with progress tracking and automatic filename slugification
+- **Excel Import** — native `.xlsx` parsing via built-in ZIP/OOXML reader, cross-platform (macOS, iOS, Linux) with no third-party dependencies
+- **CLI Tool** — `gherkin-gen` command-line interface with 7 commands: generate, validate, parse, export, convert, batch-export, languages
 - **70+ languages** — localized keywords from the official `gherkin-languages.json` with automatic language detection
 - **Streaming & Batch** — `AsyncStream`-based streaming export and batch import/validation via actors
 - **Strict concurrency** — all public types are `Sendable`, actors for shared state, `async/await` throughout
@@ -293,6 +296,34 @@ let feature = try PlainTextParser().parse(text)
 
 All prefixes and the separator are configurable via `PlainTextImportConfiguration`.
 
+### Excel
+
+`ExcelParser` reads `.xlsx` files natively using a built-in ZIP/OOXML reader (no third-party dependencies). It works cross-platform on macOS, iOS, and Linux via the system `zlib` library. Configure column mapping with `ExcelImportConfiguration`:
+
+```swift
+let config = ExcelImportConfiguration(
+    scenarioColumn: "Scenario",
+    givenColumn: "Given",
+    whenColumn: "When",
+    thenColumn: "Then"
+)
+let data = try Data(contentsOf: URL(fileURLWithPath: "tests.xlsx"))
+let feature = try ExcelParser(configuration: config).parse(data, featureTitle: "Auth")
+```
+
+An optional `tagColumn` parameter maps a column to scenario-level tags (space or comma separated). The `sheetIndex` parameter selects which worksheet to read (defaults to `0`):
+
+```swift
+let config = ExcelImportConfiguration(
+    scenarioColumn: "Scenario",
+    givenColumn: "Given",
+    whenColumn: "When",
+    thenColumn: "Then",
+    tagColumn: "Tags",
+    sheetIndex: 0
+)
+```
+
 ### Batch Import
 
 `BatchImporter` is an actor that scans a directory for `.feature` files and parses them in parallel using `TaskGroup`:
@@ -447,6 +478,40 @@ for await progress in await exporter.exportWithProgress(feature, to: path) {
 }
 ```
 
+### Batch Export
+
+`BatchExporter` is an actor that exports multiple features to individual files in a target directory. Files are written in parallel using `TaskGroup`. Feature titles are automatically slugified into filenames, and duplicate names receive numeric suffixes:
+
+```swift
+let exporter = BatchExporter()
+let results = try await exporter.exportAll(features, to: tempDir)
+```
+
+Export to JSON or Markdown by passing a format:
+
+```swift
+let exporter = BatchExporter()
+let results = try await exporter.exportAll(
+    [sampleFeatures[0]],
+    to: tempDir,
+    format: .json
+)
+```
+
+Track progress with `exportAllWithProgress`, which yields a `BatchExportProgress` value for each exported file:
+
+```swift
+let exporter = BatchExporter()
+for await progress in await exporter.exportAllWithProgress(
+    sampleFeatures,
+    to: tempDir
+) {
+    print("\(progress.featureTitle) — \(Int(progress.fractionCompleted * 100))%")
+}
+```
+
+Filename slugification converts titles to lowercase, replaces spaces and underscores with hyphens, removes special characters, and collapses consecutive hyphens. If a filename already exists, a numeric suffix is appended (`login.feature`, `login-1.feature`, `login-2.feature`).
+
 ## i18n
 
 Write features in 70+ languages. The parser detects `# language:` directives and uses localized keywords. The formatter produces output with the correct localized keywords:
@@ -480,14 +545,127 @@ print(lang.keywords.given)   // ["Soit ", "Etant donné ", ...]
 ## Architecture
 
 ```
-Sources/GherkinGenerator/
-    Model/        # Feature, Scenario, Step, Tag, DataTable, DocString, ...
-    Builder/      # GherkinFeature fluent builder
-    Parser/       # GherkinParser, CSVParser, JSONFeatureParser, PlainTextParser, BatchImporter
-    Validator/    # GherkinValidator, ValidationRule, built-in rules, BatchValidator
-    Formatter/    # GherkinFormatter, FormatterConfiguration
-    Exporter/     # GherkinExporter, StreamingExporter, ExportFormat
-    Language/     # GherkinLanguage, LanguageKeywords, GherkinLanguageRegistry
+Sources/
+    CZlib/                # System library wrapper for zlib (ZIP decompression)
+    GherkinGenerator/     # Core library (no external dependencies)
+        Model/            # Feature, Scenario, Step, Tag, DataTable, DocString, ...
+        Builder/          # GherkinFeature fluent builder
+        Parser/           # GherkinParser, CSVParser, JSONFeatureParser, PlainTextParser,
+                          # ExcelParser, ZIPReader, BatchImporter
+        Validator/        # GherkinValidator, ValidationRule, built-in rules, BatchValidator
+        Formatter/        # GherkinFormatter, FormatterConfiguration
+        Exporter/         # GherkinExporter, StreamingExporter, BatchExporter, ExportFormat
+        Language/         # GherkinLanguage, LanguageKeywords, GherkinLanguageRegistry
+    GherkinGenCLICore/    # CLI command implementations (depends on ArgumentParser)
+    GherkinGenCLI/        # Executable entry point (@main)
+```
+
+## CLI
+
+`gherkin-gen` is a command-line tool for composing, validating, and converting Gherkin `.feature` files. It provides 7 subcommands:
+
+### Install the CLI
+
+Build from source and install to `/usr/local/bin`:
+
+```bash
+make install
+```
+
+Or use the standalone install script:
+
+```bash
+./Scripts/install.sh
+```
+
+Or build manually:
+
+```bash
+swift build -c release
+cp .build/release/gherkin-gen /usr/local/bin/
+```
+
+Homebrew support via the `atelier-socle/tools` tap is planned for a future release.
+
+### generate
+
+Generate a `.feature` file from command-line arguments:
+
+```bash
+gherkin-gen generate \
+    --title "User Login" \
+    --scenario "Successful login" \
+    --given "a valid account" \
+    --when "the user logs in" \
+    --then "the dashboard is displayed" \
+    --tag smoke \
+    --output login.feature
+```
+
+Options `--given`, `--when`, `--then`, and `--tag` are repeatable. Use `--language` for non-English features (default: `en`). Omit `--output` to print to stdout.
+
+### validate
+
+Validate one or more `.feature` files for correctness:
+
+```bash
+gherkin-gen validate login.feature
+gherkin-gen validate features/
+```
+
+Pass a directory to validate all `.feature` files recursively. Use `--strict` to enable all default rules and `--quiet` to suppress success messages.
+
+### parse
+
+Parse a `.feature` file and display its structure:
+
+```bash
+gherkin-gen parse login.feature
+gherkin-gen parse login.feature --format json
+```
+
+The `--format` option accepts `summary` (default) or `json`.
+
+### export
+
+Export a `.feature` file to another format:
+
+```bash
+gherkin-gen export login.feature --format json --output login.json
+gherkin-gen export login.feature --format markdown --output login.md
+```
+
+The `--format` option accepts `feature`, `json`, or `markdown`. Omit `--output` to print to stdout.
+
+### batch-export
+
+Batch-export all `.feature` files from a directory:
+
+```bash
+gherkin-gen batch-export features/ --output dist/ --format json
+```
+
+Exports each `.feature` file as a separate output file. The `--format` option accepts `feature` (default), `json`, or `markdown`.
+
+### convert
+
+Convert CSV, JSON, TXT, or Excel `.xlsx` files to `.feature` format:
+
+```bash
+gherkin-gen convert data.csv --title "My Feature" --output output.feature
+gherkin-gen convert steps.txt --title "My Feature" --output output.feature
+gherkin-gen convert tests.xlsx --title "My Feature" --output output.feature --sheet 0
+```
+
+For CSV files, column names default to `Scenario`, `Given`, `When`, `Then` and can be customized with `--scenario-column`, `--given-column`, `--when-column`, `--then-column`. Use `--delimiter` to change the CSV delimiter and `--tag-column` to map a column to scenario-level tags.
+
+### languages
+
+List all 70+ supported Gherkin languages or show keywords for a specific language:
+
+```bash
+gherkin-gen languages
+gherkin-gen languages --code fr
 ```
 
 ## Documentation
