@@ -1,0 +1,106 @@
+# release.yml — Build and publish gherkin-gen binaries on tag push.
+#
+# Triggers on semver tags WITHOUT "v" prefix (e.g. 0.1.0, 1.2.3).
+# Builds for macOS (arm64) and Linux (x86_64), then creates a GitHub Release
+# with both archives attached.
+
+name: Release
+
+on:
+  push:
+    tags: ['[0-9]+.[0-9]+.[0-9]+']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------- macOS arm64 ----------
+  build-macos:
+    name: "Build (macOS arm64)"
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.2.app
+
+      - name: Swift version
+        run: swift --version
+
+      - name: Build release
+        run: swift build -c release
+
+      - name: Package binary
+        run: |
+          mkdir -p dist
+          cp .build/release/gherkin-gen dist/
+          cd dist
+          tar czf gherkin-gen-macos-arm64.tar.gz gherkin-gen
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gherkin-gen-macos-arm64
+          path: dist/gherkin-gen-macos-arm64.tar.gz
+
+  # ---------- Linux x86_64 ----------
+  build-linux:
+    name: "Build (Linux x86_64)"
+    runs-on: ubuntu-latest
+    container: swift:6.2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install zlib
+        run: apt-get update && apt-get install -y zlib1g-dev
+
+      - name: Swift version
+        run: swift --version
+
+      - name: Build release
+        run: swift build -c release
+
+      - name: Package binary
+        run: |
+          mkdir -p dist
+          cp .build/release/gherkin-gen dist/
+          cd dist
+          tar czf gherkin-gen-linux-x86_64.tar.gz gherkin-gen
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gherkin-gen-linux-x86_64
+          path: dist/gherkin-gen-linux-x86_64.tar.gz
+
+  # ---------- GitHub Release ----------
+  release:
+    name: "Create Release"
+    runs-on: ubuntu-latest
+    needs: [build-macos, build-linux]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gherkin-gen-macos-arm64
+          path: artifacts
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gherkin-gen-linux-x86_64
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/gherkin-gen-macos-arm64.tar.gz
+            artifacts/gherkin-gen-linux-x86_64.tar.gz
