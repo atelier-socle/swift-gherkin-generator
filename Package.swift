@@ -16,7 +16,14 @@ let package = Package(
         .library(
             name: "GherkinGenerator",
             targets: ["GherkinGenerator"]
+        ),
+        .executable(
+            name: "gherkin-gen",
+            targets: ["GherkinGenCLI"]
         )
+    ],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.5.0")
     ],
     targets: [
         .target(
@@ -24,11 +31,28 @@ let package = Package(
             path: "Sources/GherkinGenerator",
             resources: [.process("Resources")]
         ),
-.testTarget(
+        .executableTarget(
+            name: "GherkinGenCLI",
+            dependencies: [
+                "GherkinGenerator",
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
+            ],
+            path: "Sources/GherkinGenCLI"
+        ),
+        .testTarget(
             name: "GherkinGeneratorTests",
             dependencies: ["GherkinGenerator"],
             path: "Tests/GherkinGeneratorTests",
             resources: [.process("Fixtures/Resources")]
+        ),
+        .testTarget(
+            name: "GherkinGenCLITests",
+            dependencies: [
+                "GherkinGenCLI",
+                "GherkinGenerator",
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
+            ],
+            path: "Tests/GherkinGenCLITests"
         )
     ]
 )
