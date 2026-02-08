@@ -2,7 +2,7 @@ import ArgumentParser
 import GherkinGenerator
 import Testing
 
-@testable import GherkinGenCLI
+@testable import GherkinGenCLICore
 
 @Suite("LanguagesCommand")
 struct LanguagesCommandTests {

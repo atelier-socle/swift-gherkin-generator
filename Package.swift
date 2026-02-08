@@ -40,12 +40,17 @@ let package = Package(
             path: "Sources/GherkinGenerator",
             resources: [.process("Resources")]
         ),
-        .executableTarget(
-            name: "GherkinGenCLI",
+        .target(
+            name: "GherkinGenCLICore",
             dependencies: [
                 "GherkinGenerator",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
             ],
+            path: "Sources/GherkinGenCLICore"
+        ),
+        .executableTarget(
+            name: "GherkinGenCLI",
+            dependencies: ["GherkinGenCLICore"],
             path: "Sources/GherkinGenCLI"
         ),
         .testTarget(
@@ -57,7 +62,7 @@ let package = Package(
         .testTarget(
             name: "GherkinGenCLITests",
             dependencies: [
-                "GherkinGenCLI",
+                "GherkinGenCLICore",
                 "GherkinGenerator",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
             ],

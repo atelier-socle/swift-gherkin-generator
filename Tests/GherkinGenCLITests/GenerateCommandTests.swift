@@ -3,7 +3,7 @@ import Foundation
 import GherkinGenerator
 import Testing
 
-@testable import GherkinGenCLI
+@testable import GherkinGenCLICore
 
 @Suite("GenerateCommand")
 struct GenerateCommandTests {
