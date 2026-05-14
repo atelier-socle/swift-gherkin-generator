@@ -35,15 +35,23 @@ jobs:
       - name: swift-format
         run: swift-format lint -r Sources/ Tests/
 
-  # ---------- Build & Test (macOS) ----------
+  # ---------- Build & Test (macOS, Swift 6.2 + 6.3) ----------
   build-and-test:
-    name: "macOS (Swift 6.2)"
+    name: "macOS (Swift ${{ matrix.swift }})"
     runs-on: macos-26
     needs: lint
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - swift: "6.2"
+            xcode: Xcode_26.2
+          - swift: "6.3"
+            xcode: Xcode_26.4
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_26.2.app
+        run: sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
       - name: Swift Version
         run: swift --version
       - name: Build
@@ -59,7 +67,10 @@ jobs:
               -instr-profile="$PROF_DATA" \
               -ignore-filename-regex='\.build|Tests'
           fi
+      # lcov generation + Codecov upload run from the Swift 6.2 matrix leg
+      # only, to avoid duplicate coverage reports.
       - name: Generate lcov Coverage
+        if: matrix.swift == '6.2'
         run: |
           PROF_DATA=$(find .build -name "default.profdata" -type f | head -1)
           TEST_BIN=$(find .build -name "GherkinGeneratorPackageTests" -type f ! -name "*.o" | head -1)
@@ -71,6 +82,7 @@ jobs:
               > coverage.lcov
           fi
       - name: Upload to Codecov
+        if: matrix.swift == '6.2'
         uses: codecov/codecov-action@v5
         with:
           files: coverage.lcov
@@ -98,7 +110,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_26.2.app
+        run: sudo xcode-select -s /Applications/Xcode_26.4.app
       - name: Build for ${{ matrix.platform }}
         run: |
           xcodebuild build \
